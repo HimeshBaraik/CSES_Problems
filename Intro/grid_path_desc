@@ -1,0 +1,66 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+string s;
+bool vis[7][7];
+int ans = 0;
+
+// Directions: D, U, R, L
+int dx[4] = {1, -1, 0, 0};
+int dy[4] = {0, 0, 1, -1};
+char dir[4] = {'D', 'U', 'R', 'L'};
+
+// Check if cell is inside grid
+bool inside(int x, int y) {
+    return x >= 0 && y >= 0 && x < 7 && y < 7;
+}
+
+void dfs(int x, int y, int step) {
+
+    // ✅ If reached destination
+    if (x == 6 && y == 0) {
+        if (step == 48) ans++;
+        return;
+    }
+
+    // ❌ If steps finished but not at destination
+    if (step == 48) return;
+
+    // 🔥 PRUNING: Dead-end splits (very important)
+
+    // Case 1: Horizontal block (left & right blocked, up & down free)
+    if ((y > 0 && y < 6 && !vis[x][y-1] && !vis[x][y+1]) &&
+        ((x == 0 || vis[x-1][y]) && (x == 6 || vis[x+1][y]))) return;
+
+    // Case 2: Vertical block (up & down blocked, left & right free)
+    if ((x > 0 && x < 6 && !vis[x-1][y] && !vis[x+1][y]) &&
+        ((y == 0 || vis[x][y-1]) && (y == 6 || vis[x][y+1]))) return;
+
+    vis[x][y] = true;
+
+    char c = s[step];
+
+    // Try all 4 directions
+    for (int d = 0; d < 4; d++) {
+
+        // If fixed direction and doesn't match → skip
+        if (c != '?' && c != dir[d]) continue;
+
+        int nx = x + dx[d];
+        int ny = y + dy[d];
+
+        if (inside(nx, ny) && !vis[nx][ny]) {
+            dfs(nx, ny, step + 1);
+        }
+    }
+
+    vis[x][y] = false; // backtrack
+}
+
+int main() {
+    cin >> s;
+
+    dfs(0, 0, 0);
+
+    cout << ans << endl;
+}
